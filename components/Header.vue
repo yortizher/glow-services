@@ -1,7 +1,21 @@
 <script setup>
+import { computed, onMounted } from 'vue';
 import { useTheme } from "vuetify";
-const router = useRouter()
+import { useRouter } from 'vue-router';
+import { useUserStore } from '@/stores/userStore';
+import { storeToRefs } from 'pinia';
+const router = useRouter();
 
+
+
+const userStore = useUserStore();
+const { user } = storeToRefs(userStore);
+
+console.log(user);
+
+
+const userName = computed(() => user.value ? user.value.name : null);
+console.log(userName);
 const theme = useTheme();
 
 const register = ref([
@@ -15,8 +29,7 @@ const register = ref([
     icon: 'mdi-home',
     to: '/RegisterSupplier',
   }
-]
-)
+]);
 
 const toggleTheme = () => {
   theme.global.name.value =
@@ -24,10 +37,15 @@ const toggleTheme = () => {
       ? "myCustomDarkTheme"
       : "myCustomLightTheme";
 };
+
 const goBack = () => {
-  router.push({ path: "/" })
+  router.push({ path: "/" });
 };
+onMounted(() => {
+  userStore.restoreUser();
+});
 </script>
+
 <template>
   <div class="toolbar-content">
     <v-toolbar height="90" class="bg-quinary toolbar pl-5 pr-5">
@@ -40,25 +58,31 @@ const goBack = () => {
         <v-icon class="text-quaternary icon-login" title="Inicia sesión">mdi-account</v-icon>
       </v-btn> -->
       <!-- <v-toolbar-item class="text-quaternary text-end mr-2" style="font-family: 'MiFuente';font-size: 20px;line-height: normal;font-weight: bold;">Glow Services</v-toolbar-item> -->
-      <v-toolbar-item class="text-quaternary text-end options-header">
+      <v-toolbar-items class="text-quaternary text-end options-header">
         <NuxtLink class="text-quaternary" to="/login">Inicie sesión</NuxtLink>
-      </v-toolbar-item>
-      <v-toolbar-item class="text-quaternary text-end ml-5 options-header">
+      </v-toolbar-items>
+      <v-toolbar-items  class="text-quaternary text-end ml-5 options-header">
         <v-menu open-on-hover open-on-click>
-            <template v-slot:activator="{ props }">
-              <div v-bind="props">
-                Registrese
-              </div>
-            </template>
-
-            <v-list class="text-center">
-              <v-list-item v-for="(item, index) in register" :key="index">
-                <v-list-item-title><NuxtLink style="text-decoration: none;color: #1237a9;font-family: 'Montserrat-Medium';"  :to="item.to" clas="text-primary">{{ item.title }}</NuxtLink></v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
-      </v-toolbar-item>
+          <template v-slot:activator="{ props }">
+            <div v-bind="props">
+              Registrese
+            </div>
+          </template>
+          
+          <v-list class="text-center">
+            <v-list-item v-for="(item, index) in register" :key="index">
+              <v-list-item-title><NuxtLink style="text-decoration: none;color: #1237a9;font-family: 'Montserrat-Medium';"  :to="item.to" clas="text-primary">{{ item.title }}</NuxtLink></v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </v-toolbar-items>
     </v-toolbar>
+    <v-toolbar-items v-if="userName" class="text-quaternary text-end options-header">
+      <span>Hola, {{ userName }}!</span>
+    </v-toolbar-items>
+    <!-- <v-toolbar-items v-if="user && user.name" class="text-quaternary text-end options-header">
+      <span>Hola, {{ user.name }}!</span>
+    </v-toolbar-items> -->
   </div>
 </template>
 <style lang="scss">
