@@ -1,24 +1,28 @@
 <template>
-    <div class="layout">
-        <header class="d-flex justify-center">
-            <Header/>
+    <v-app>
+      <div class="layout">
+        <header>
+          <Header />
         </header>
         <main class="main">
-            <slot></slot>
+          <slot></slot>
+          <IconsLayout />
         </main>
         <footer>
-            <Footer/>
+          <Footer />
         </footer>
-    </div>
-</template>
+      </div>
+    </v-app>
+  </template>
 
 <style scoped>
 .layout {
-    display: grid;
-    grid-template-rows: auto 1fr auto;
-    min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100vh;
+  overflow: hidden;
 }
 .main {
-    margin-top: 90px;
+  margin-top: 90px;
 }
 </style>
