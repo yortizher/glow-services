@@ -16,14 +16,15 @@ const db = getFirestore();
 const auth = getAuth();
 
 const data = reactive({
-  address: "",
-  confirm_password: "",
-  document_number: "",
-  document_type: null, // Asegúrate de que el valor sea null
-  email: "",
   name: "",
-  id_authentication: "",
+  email: "",
   phone: "",
+  city: null, // Ciudad
+  address: "",
+  document_type: null, // Asegúrate de que el valor sea null
+  document_number: "",
+  id_authentication: "",
+  confirm_password: "",
   id_roles: "",
 });
 // confirm_password
@@ -31,12 +32,13 @@ const data = reactive({
 const touched = reactive({
   name: false,
   email: false,
-  document_number: false,
   phone: false,
+  city: false,
   address: false,
+  document_type: false,
+  document_number: false,
   password: false,
   confirm_password: false,
-  document_type: false,
 });
 
 const firstNameRules = ref([
@@ -96,7 +98,11 @@ const documentTypeRules = ref([
   (v) =>
     !touched.document_type || !!v || "Debe seleccionar un tipo de documento.",
 ]);
+const cityRules = ref([
+  (v) => !touched.city || !!v || "Debe seleccionar una ciudad.",
+]);
 
+const citiesList = ref([]);
 const documentType = ref([]);
 const formRef = ref(null); // Referencia para el formulario
 const showSnackbar = ref(false);
@@ -106,6 +112,17 @@ let firstRol = null; // Variable para almacenar el first rol
 
 const getDataUsers = async () => {
   const resUser = await getDocs(collection(db, "users"));
+};
+
+const fetchAndStoreCities = async () => {
+  try {
+    const resCities = await getDocs(collection(db, "cities"));
+    resCities.forEach((doc) => {
+      citiesList.value.push(doc.data().name);
+    });
+  } catch (error) {
+    console.error("Error al obtener las ciudades:", error);
+  }
 };
 
 const fetchAndStoreDocumentTypes = async () => {
@@ -195,14 +212,15 @@ onMounted(() => {
   getDataUsers();
   fetchAndStoreDocumentTypes();
   fetchRoles();
+  fetchAndStoreCities();
 });
 </script>
 
 <template>
   <v-row class="d-flex justify-center ma-0">
-    <v-col cols="11" sm="7" md="7" lg="7" xl="7">
+    <v-col cols="12" sm="7" md="7" lg="7" xl="7">
       <v-sheet
-        class="mx-auto form-content"
+        class="mx-auto form-content-register"
         width="100%"
         elevation="2"
         rounded="lg"
@@ -210,7 +228,7 @@ onMounted(() => {
         <v-form ref="formRef">
           <h2 class="title-login text-primary">Registro de Usuarios</h2>
           <v-row class="d-flex justify-center">
-            <v-col cols="11" sm="6" md="6" lg="6" xl="6" class="pt-0">
+            <v-col cols="12" sm="6" md="6" lg="6" xl="6" class="pt-0">
               <v-text-field
                 v-model="data.name"
                 :rules="firstNameRules"
@@ -224,7 +242,7 @@ onMounted(() => {
                 @blur="touched.name = true"
               ></v-text-field>
             </v-col>
-            <v-col cols="11" sm="6" md="6" lg="6" xl="6" class="pt-0">
+            <v-col cols="12" sm="6" md="6" lg="6" xl="6" class="pt-0">
               <v-text-field
                 v-model="data.email"
                 :rules="emailRules"
@@ -241,7 +259,7 @@ onMounted(() => {
             </v-col>
           </v-row>
           <v-row class="d-flex justify-center">
-            <v-col cols="11" sm="6" md="6" lg="6" xl="6" class="pt-0">
+            <v-col cols="12" sm="6" md="6" lg="6" xl="6" class="pt-0">
               <v-select
                 v-model="data.document_type"
                 :rules="documentTypeRules"
@@ -255,14 +273,13 @@ onMounted(() => {
                 @blur="touched.document_type = true"
               ></v-select>
             </v-col>
-            <v-col cols="11" sm="6" md="6" lg="6" xl="6" class="pt-0">
+            <v-col cols="12" sm="6" md="6" lg="6" xl="6" class="pt-0">
               <v-text-field
                 v-model="data.document_number"
                 :rules="documentNumberRules"
                 label="Número de documento"
                 variant="outlined"
                 color="primary"
-                class="mt-1"
                 type="number"
                 required
                 clearable
@@ -272,7 +289,36 @@ onMounted(() => {
             </v-col>
           </v-row>
           <v-row class="d-flex justify-center">
-            <v-col cols="11" sm="6" md="6" lg="6" xl="6" class="pt-0">
+            <v-col cols="12" sm="6" md="6" lg="6" xl="6" class="pt-0">
+              <v-select
+                v-model="data.city"
+                :rules="cityRules"
+                label="Ciudad"
+                :items="citiesList"
+                variant="outlined"
+                color="primary"
+                required
+                clearable
+                clear-icon="mdi mdi-close-circle-outline"
+                @blur="touched.city = true"
+              ></v-select>
+            </v-col>
+            <v-col cols="12" sm="6" md="6" lg="6" xl="6" class="pt-0">
+              <v-text-field
+                v-model="data.address"
+                :rules="addressRules"
+                label="Dirección"
+                variant="outlined"
+                color="primary"
+                required
+                clearable
+                clear-icon="mdi mdi-close-circle-outline"
+                @blur="touched.address = true"
+              ></v-text-field>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col cols="12" sm="12" md="12" lg="12" xl="12" class="pt-0">
               <v-text-field
                 v-model="data.phone"
                 :rules="phoneRules"
@@ -287,23 +333,9 @@ onMounted(() => {
                 @blur="touched.phone = true"
               ></v-text-field>
             </v-col>
-            <v-col cols="11" sm="6" md="6" lg="6" xl="6" class="pt-0">
-              <v-text-field
-                v-model="data.address"
-                :rules="addressRules"
-                label="Dirección"
-                variant="outlined"
-                color="primary"
-                class="mt-1"
-                required
-                clearable
-                clear-icon="mdi mdi-close-circle-outline"
-                @blur="touched.address = true"
-              ></v-text-field>
-            </v-col>
           </v-row>
           <v-row class="d-flex justify-center">
-            <v-col cols="11" sm="6" md="6" lg="6" xl="6" class="pt-0">
+            <v-col cols="12" sm="6" md="6" lg="6" xl="6" class="pt-0">
               <v-text-field
                 v-model="data.id_authentication"
                 :rules="passwordRules"
@@ -317,7 +349,7 @@ onMounted(() => {
                 @blur="touched.password = true"
               ></v-text-field>
             </v-col>
-            <v-col cols="11" sm="6" md="6" lg="6" xl="6" class="pt-0">
+            <v-col cols="12" sm="6" md="6" lg="6" xl="6" class="pt-0">
               <v-text-field
                 v-model="data.confirm_password"
                 :rules="confirmPasswordRules"
@@ -363,7 +395,7 @@ onMounted(() => {
 * {
   font-family: "Montserrat-Medium";
 }
-.form-content {
+.form-content-register {
   margin-top: 5vh;
   padding: 20px 30px;
 

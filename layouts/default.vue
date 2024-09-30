@@ -6,7 +6,6 @@
         </header>
         <main class="main">
           <slot></slot>
-          <IconsLayout />
         </main>
         <footer>
           <Footer />
@@ -17,12 +16,15 @@
 
 <style scoped>
 .layout {
-  display: grid;
-  grid-template-rows: auto 1fr auto;
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
-  overflow: hidden;
+  overflow-x: hidden;
 }
+
 .main {
-  margin-top: 90px;
+  flex: 1;
+  padding-top: 90px;
 }
+
 </style>

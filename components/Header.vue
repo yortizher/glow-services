@@ -4,10 +4,9 @@ import { useTheme } from "vuetify";
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/userStore';
 import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
+
 const router = useRouter();
-
-
-
 const userStore = useUserStore();
 const { user } = storeToRefs(userStore);
 
@@ -29,7 +28,7 @@ const register = ref([
 
 const toggleTheme = () => {
   theme.global.name.value =
-    theme.global.name.value == "myCustomLightTheme"
+    theme.global.name.value === "myCustomLightTheme"
       ? "myCustomDarkTheme"
       : "myCustomLightTheme";
 };
@@ -37,10 +36,12 @@ const toggleTheme = () => {
 const goBack = () => {
   router.push({ path: "/" });
 };
+
 const logout = () => {
   userStore.clearUser();
   router.push('/'); // Redirigir a la página de inicio de sesión
 };
+
 onMounted(() => {
   userStore.restoreUser();
 });
@@ -48,66 +49,97 @@ onMounted(() => {
 
 <template>
   <div class="toolbar-content">
-    <v-toolbar height="90" class="bg-quinary toolbar pl-5 pr-5">
-      <v-img src="logoHome.png" alt="Logo" max-height="100" max-width="130" contain class="logo-container"
-        @click="goBack()"></v-img>
-      <v-spacer></v-spacer>
-      <v-toolbar-items v-if="!userName" class="text-quaternary text-end options-header">
+    <v-toolbar height="90" class="toolbar bg-quinary pl-5 pr-5">
+      <!-- Logo -->
+      <v-img
+        src="logoHome.png"
+        alt="Logo"
+        max-height="100"
+        max-width="130"
+        contain
+        class="logo-container"
+        @click="goBack"
+      />
+      
+      <v-spacer />
+
+      <!-- Opciones para usuario no autenticado -->
+      <v-toolbar-items v-if="!userName" class="options-header text-quaternary text-end">
         <NuxtLink class="text-quaternary" to="/login">Inicie sesión</NuxtLink>
       </v-toolbar-items>
-      <v-toolbar-items v-if="!userName"  class="text-quaternary text-end ml-5 options-header">
+
+      <v-toolbar-items v-if="!userName" class="options-header text-quaternary text-end ml-5">
         <v-menu open-on-hover open-on-click>
           <template v-slot:activator="{ props }">
-            <div v-bind="props">
-              Registrese
-            </div>
+            <div v-bind="props">Registrese</div>
           </template>
           <v-list class="text-center">
             <v-list-item v-for="(item, index) in register" :key="index">
-              <v-list-item-title><NuxtLink :to="item.to" clas="text-primary items-list">{{ item.title }}</NuxtLink></v-list-item-title>
+              <v-list-item-title>
+                <NuxtLink :to="item.to" class="items-list text-quaternary">{{ item.title }}</NuxtLink>
+              </v-list-item-title>
             </v-list-item>
           </v-list>
         </v-menu>
       </v-toolbar-items>
-      <v-toolbar-items v-if="userName" class="text-quaternary text-end options-header">
-        <span>Hola, {{ userName }}!</span>
+
+      <!-- Opciones para usuario autenticado -->
+      <v-toolbar-items v-if="userName" class="options-header text-quaternary text-end">
+        <NuxtLink to="/profile" > Hola, {{ userName.split(' ')[0] }}!</NuxtLink>
       </v-toolbar-items>
-      <v-toolbar-items v-if="userName" class="text-quaternary text-end options-header">
-        <v-icon @click="logout" class="text-quaternary ml-3" size="40" title="Cerrar sesión">mdi-logout</v-icon>
+      <v-toolbar-items v-if="userName" class="options-header text-quaternary text-end">
+        <v-icon
+          @click="logout"
+          class="text-quaternary ml-5 icon-logout "
+          size="40"
+          title="Cerrar sesión"
+        >mdi-logout</v-icon>
       </v-toolbar-items>
     </v-toolbar>
   </div>
 </template>
-<style lang="scss">
 
+<style lang="scss" scoped>
+/* Contenedor principal del toolbar */
 .toolbar-content {
   position: fixed;
   z-index: 2;
   width: 100%;
+  cursor: pointer;
+}
 
-  .icon-login {
-    font-size: 2rem;
-  }
+/* Estilos para la barra de herramientas */
+.toolbar {
+  padding-left: 20px;
+  padding-right: 20px;
+}
 
-  .logo-container {
+/* Estilos para el logo */
+.logo-container {
+  cursor: pointer;
+}
+
+/* Estilos generales para las opciones del toolbar */
+.options-header {
+  display: flex;
+  align-items: center;
+  font-family: 'Montserrat-Medium';
+  font-size: 20px;
+  line-height: normal;
+  font-weight: bold;
+
+  a {
     cursor: pointer;
-  }
-  .options-header {
-    display: flex;
-    align-items: center;
-    font-family: 'Montserrat-Medium';
-    font-size: 20px;
-    line-height: normal;
-    font-weight: bold;
-    cursor: pointer;
-    a {
-      text-decoration: none;
-    }
-  }
-  .items-list {
     text-decoration: none;
     color: #1237a9;
-    font-family: 'Montserrat-Medium';
   }
+}
+
+/* Estilos específicos para la lista de opciones */
+.items-list {
+  cursor: pointer;
+  text-decoration: none;
+  color: #1237a9;
+  font-family: 'Montserrat-Medium';
 }
 </style>

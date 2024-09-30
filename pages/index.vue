@@ -1,4 +1,4 @@
 <template>
    <HomeBanner/>
-   <HomeServices class=" mt-8 mb-8"/>
+   <HomeServices class=" mt-8 mb-8 mx-2"/>
 </template>
