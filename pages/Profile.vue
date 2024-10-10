@@ -12,6 +12,7 @@ import {
 } from "firebase/firestore";
 import {
   getAuth,
+  onAuthStateChanged, // Importamos onAuthStateChanged
   updateEmail,
   updatePassword,
   deleteUser,
@@ -35,13 +36,9 @@ const storage = getStorage();
 const router = useRouter();
 const userStore = useUserStore();
 
-// Obtener el usuario actual
-const user = auth.currentUser;
-
-if (!user) {
-  // Si no hay usuario autenticado, redirigir al inicio de sesión
-  router.push("/login");
-}
+// Crear una referencia reactiva para el usuario
+const user = ref(null);
+const isLoading = ref(true); // Estado de carga
 
 // Objeto reactivo para los datos del formulario
 const data = reactive({
@@ -188,12 +185,12 @@ const confirmDeleteDialog = ref(false);
 // Función para obtener los datos del usuario desde Firestore
 const fetchUserData = async () => {
   try {
-    const userDoc = await getDoc(doc(db, "users", user.uid));
+    const userDoc = await getDoc(doc(db, "users", user.value.uid));
     if (userDoc.exists()) {
       const userData = userDoc.data();
       // Asignar los datos al objeto reactivo
       data.name = userData.name || "";
-      data.email = userData.email || user.email || "";
+      data.email = userData.email || user.value.email || "";
       data.phone = userData.phone || "";
       data.city = userData.city || null;
       data.address = userData.address || "";
@@ -251,7 +248,6 @@ const getDataServices = async () => {
 
 // Función para manejar el cambio de archivo
 const onFileChange = (file) => {
-  console.log("Imagen seleccionada:", file);
   touched.profileImage = true;
   // Revalidar el formulario
   formRef.value.validate();
@@ -286,7 +282,7 @@ const updateData = async () => {
   if (isValid && isPasswordValid) {
     try {
       // Si se va a cambiar la contraseña o el email, se necesita reautenticación
-      if (newPassword.value || data.email !== user.email) {
+      if (newPassword.value || data.email !== user.value.email) {
         actionAfterReauth.value = "updateData";
         reauthDialog.value = true;
       } else {
@@ -307,15 +303,13 @@ const updateData = async () => {
 // Función para realizar la actualización de datos
 const performUpdateData = async () => {
   // Actualizar email en Firebase Auth si cambió
-  if (data.email !== user.email) {
-    await updateEmail(user, data.email);
-    console.log("Correo electrónico actualizado en Firebase Auth.");
+  if (data.email !== user.value.email) {
+    await updateEmail(user.value, data.email);
   }
 
   // Actualizar contraseña si se ingresó una nueva
   if (newPassword.value) {
-    await updatePassword(user, newPassword.value);
-    console.log("Contraseña actualizada en Firebase Auth.");
+    await updatePassword(user.value, newPassword.value);
   }
 
   // Subir la imagen de perfil a Firebase Storage si cambió
@@ -323,16 +317,15 @@ const performUpdateData = async () => {
   if (data.profileImage) {
     // Si ya hay una imagen, eliminarla
     if (profileImageUrl) {
-      const oldImageRef = storageRef(storage, `profileImages/${user.uid}`);
+      const oldImageRef = storageRef(storage, `profileImages/${user.value.uid}`);
       await deleteObject(oldImageRef);
     }
     const file = Array.isArray(data.profileImage)
       ? data.profileImage[0]
       : data.profileImage;
-    const imageRef = storageRef(storage, `profileImages/${user.uid}`);
+    const imageRef = storageRef(storage, `profileImages/${user.value.uid}`);
     await uploadBytes(imageRef, file);
     profileImageUrl = await getDownloadURL(imageRef);
-    console.log("URL de la imagen de perfil:", profileImageUrl);
   }
 
   // Preparar datos para actualizar en Firestore
@@ -351,7 +344,7 @@ const performUpdateData = async () => {
   };
 
   // Actualizar datos del usuario en Firestore
-  const userRef = doc(db, "users", user.uid);
+  const userRef = doc(db, "users", user.value.uid);
   await updateDoc(userRef, dataToUpdate);
 
   showSnackbar.value = true;
@@ -367,7 +360,6 @@ const performUpdateData = async () => {
   confirmPassword.value = "";
 };
 
-
 // Función para manejar la reautenticación
 const handleReauthentication = async () => {
   if (!reauthPassword.value) {
@@ -377,10 +369,10 @@ const handleReauthentication = async () => {
   }
   try {
     const credential = EmailAuthProvider.credential(
-      user.email,
+      user.value.email,
       reauthPassword.value
     );
-    await reauthenticateWithCredential(user, credential);
+    await reauthenticateWithCredential(user.value, credential);
     reauthDialog.value = false;
     reauthPassword.value = "";
 
@@ -408,15 +400,15 @@ const performDeleteAccount = async () => {
   try {
     // Eliminar la imagen de perfil de Firebase Storage
     if (data.profileImageUrl) {
-      const imageRef = storageRef(storage, `profileImages/${user.uid}`);
+      const imageRef = storageRef(storage, `profileImages/${user.value.uid}`);
       await deleteObject(imageRef);
     }
 
     // Eliminar el documento del usuario en Firestore
-    await deleteDoc(doc(db, "users", user.uid));
+    await deleteDoc(doc(db, "users", user.value.uid));
 
     // Eliminar el usuario de Firebase Auth
-    await deleteUser(user);
+    await deleteUser(user.value);
     userStore.clearUser();
 
     showSnackbar.value = true;
@@ -431,12 +423,22 @@ const performDeleteAccount = async () => {
   }
 };
 
-// Al montar el componente, obtener los datos del usuario y otras listas
+// Al montar el componente, utilizar onAuthStateChanged para manejar el estado de autenticación
 onMounted(() => {
-  fetchUserData();
-  fetchAndStoreCities();
-  fetchAndStoreDocumentTypes();
-  getDataServices();
+  onAuthStateChanged(auth, (currentUser) => {
+    isLoading.value = false;
+    if (currentUser) {
+      user.value = currentUser;
+      // Llamar a las funciones que dependen del usuario autenticado
+      fetchUserData();
+      fetchAndStoreCities();
+      fetchAndStoreDocumentTypes();
+      getDataServices();
+    } else {
+      // Si no hay usuario autenticado, redirigir al inicio de sesión
+      router.push("/login");
+    }
+  });
 });
 </script>
 
@@ -593,7 +595,7 @@ onMounted(() => {
             <v-col cols="12" sm="12" md="12" lg="12" xl="12" class="mt-0 pt-0">
               <div class="text-medium-emphasis mb-2">
                 Lee las descripciones de los
-                <a class="link text-primary" href="">servicios</a> y elige los
+                <NuxtLink class="link text-primary" to="/Menu">servicios</NuxtLink> y elige los
                 que puedes ofrecer.
               </div>
               <div v-if="isServicesListLoaded">

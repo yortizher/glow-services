@@ -15,6 +15,11 @@ const drawer = ref(false);
 /* --------------------- Variables Computadas --------------------- */
 const userName = computed(() => (user.value ? user.value.name : null));
 
+const adminRoleId = 'bQf1glwn1acUXQD1ZWzJ'; // ID del rol de administrador
+
+const isAdmin = computed(() => {
+  return user.value && user.value.id_roles === adminRoleId;
+});
 /* --------------------- Datos --------------------- */
 const register = ref([
   { title: "Registro Usuario", icon: "mdi-home", to: "/Register" },
@@ -68,6 +73,10 @@ onMounted(() => {
         <!-- Link a Servicios -->
         <v-toolbar-items class="toolbar__item toolbar__item--services text-end mr-5">
           <NuxtLink class="toolbar__link" to="/Menu">Servicios</NuxtLink>
+        </v-toolbar-items>
+
+        <v-toolbar-items v-if="isAdmin" class="toolbar__item toolbar__item--services text-end mr-5">
+          <NuxtLink class="toolbar__link" to="/Administration">Administración</NuxtLink>
         </v-toolbar-items>
 
         <!-- Iniciar sesión (cuando no hay usuario) -->

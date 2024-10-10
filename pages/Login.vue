@@ -83,14 +83,11 @@ const getUserFromFirestore = async (uid) => {
     const userSnap = await getDoc(userRef); // Usar getDoc para un solo documento
 
     if (userSnap.exists()) {
-      console.log("Datos del usuario desde Firestore:", userSnap.data());
       return userSnap.data();
     } else {
-      console.log("No se encontró el documento del usuario en Firestore.");
       return null;
     }
   } catch (error) {
-    console.error("Error al obtener datos del usuario desde Firestore:", error);
     return null;
   }
 };
@@ -114,7 +111,6 @@ const login = async () => {
       );
 
       dataUserCredential.value = userCredential; // Almacenar la credencial del usuario en una variable
-      console.log("Usuario autenticado:", userCredential.user.uid);
 
       // Obtener datos adicionales del usuario desde Firestore
       const userData = await getUserFromFirestore(userCredential.user.uid);
@@ -144,7 +140,6 @@ const login = async () => {
 };
 
 const resetPassword = async () => {
-  console.log("Intentando enviar el correo de restablecimiento...");
   touched.resetEmail = true;
 
   // Validar el formulario de recuperación

@@ -18,7 +18,6 @@ const getDataServices = async () => {
         ...doc.data(),
       }))
       .filter((service) => service.important === true); // Filtrar solo los que tienen "important" en true
-    console.log("Servicios obtenidos:", services.value);
   } catch (error) {
     console.error("Error al obtener los servicios:", error);
   }

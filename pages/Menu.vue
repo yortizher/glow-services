@@ -13,7 +13,6 @@ const getDataServices = async () => {
       id: doc.id,
       ...doc.data(),
     }));
-    console.log("Servicios obtenidos:", services.value);
   } catch (error) {
     console.error("Error al obtener los servicios:", error);
   }

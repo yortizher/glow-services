@@ -7,7 +7,18 @@ import {
   setDoc,
   doc,
 } from "firebase/firestore";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+} from "firebase/auth";
+import {
+  getStorage,
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL,
+} from "firebase/storage";
+import { useRouter } from "vue-router";
 
 // Inicializa Firestore
 const db = getFirestore();
@@ -15,20 +26,25 @@ const db = getFirestore();
 // Inicializa Firebase Authentication
 const auth = getAuth();
 
+// Inicializa Firebase Storage
+const storage = getStorage();
+
+const router = useRouter();
+
 const data = reactive({
   name: "",
   email: "",
   phone: "",
-  city: null, // Ciudad
+  city: null,
   address: "",
-  document_type: null, // Asegúrate de que el valor sea null
+  document_type: null,
   document_number: "",
-  id_authentication: "",
+  password: "",
   confirm_password: "",
   id_roles: "",
+  profileImage: null, // Agregado: Imagen de perfil
 });
-// confirm_password
-// password
+
 const touched = reactive({
   name: false,
   email: false,
@@ -39,6 +55,7 @@ const touched = reactive({
   document_number: false,
   password: false,
   confirm_password: false,
+  profileImage: false, // Agregado: Para el estado de la imagen
 });
 
 const firstNameRules = ref([
@@ -90,7 +107,7 @@ const confirmPasswordRules = ref([
   (v) => !touched.confirm_password || !!v || "Debe confirmar la contraseña.",
   (v) =>
     !touched.confirm_password ||
-    v === data.id_authentication ||
+    v === data.password ||
     "Las contraseñas no coinciden.",
 ]);
 
@@ -98,8 +115,23 @@ const documentTypeRules = ref([
   (v) =>
     !touched.document_type || !!v || "Debe seleccionar un tipo de documento.",
 ]);
+
 const cityRules = ref([
   (v) => !touched.city || !!v || "Debe seleccionar una ciudad.",
+]);
+
+// Reglas de validación para la imagen de perfil
+const profileImageRules = ref([
+  (v) => !touched.profileImage || !!v || "Debe seleccionar una foto de perfil.",
+  (v) => {
+    if (!touched.profileImage) return true;
+    if (!v) return "Debe seleccionar una foto de perfil.";
+    const file = Array.isArray(v) ? v[0] : v;
+    return (
+      (file && file.type && file.type.includes("image/")) ||
+      "El archivo debe ser una imagen."
+    );
+  },
 ]);
 
 const citiesList = ref([]);
@@ -108,11 +140,7 @@ const formRef = ref(null); // Referencia para el formulario
 const showSnackbar = ref(false);
 const textSnackbar = ref("");
 const roles = ref([]); // Estado reactivo para los roles
-let firstRol = null; // Variable para almacenar el first rol
-
-const getDataUsers = async () => {
-  const resUser = await getDocs(collection(db, "users"));
-};
+let defaultRoleId = null; // Variable para almacenar el ID del rol predeterminado
 
 const fetchAndStoreCities = async () => {
   try {
@@ -131,76 +159,126 @@ const fetchAndStoreDocumentTypes = async () => {
     documentType.value.push(doc.data().name);
   });
 };
+
 const fetchRoles = async () => {
-  const resRoles = await getDocs(collection(db, "rol")); // Cambia "rol" por el nombre de la colección en Firestore
+  const resRoles = await getDocs(collection(db, "rol"));
   resRoles.forEach((doc) => {
-    roles.value.push({ text: doc.data().name, value: doc.id }); // Llena el array de roles
-    // console.log(roles.value);
+    roles.value.push({ text: doc.data().name, value: doc.id });
   });
 
   if (roles.value.length > 0) {
-    firstRol = roles.value[0]; // Obtener el primer rol del array
+    // Asigna el rol de "Usuario" como predeterminado
+    defaultRoleId =
+      roles.value.find((role) => role.text === "Usuario")?.value ||
+      roles.value[0].value;
+  } else {
+    console.error("No se encontraron roles en la base de datos.");
   }
 };
+
+// Función para limpiar el formulario
 const clearForm = () => {
-  // Restablecer todos los campos del formulario a sus valores iniciales
   Object.keys(data).forEach((key) => {
-    data[key] = key === "document_type" ? null : ""; // Asegura que document_type sea null y los demás campos sean cadenas vacías
+    if (key === "document_type" || key === "city") {
+      data[key] = null;
+    } else if (key === "profileImage") {
+      data[key] = null;
+    } else {
+      data[key] = "";
+    }
   });
 
-  // Restablecer el estado de "touched" para que los mensajes de error desaparezcan
   Object.keys(touched).forEach((key) => {
     touched[key] = false;
   });
 
-  // Resetear la validación del formulario
   formRef.value.resetValidation();
 };
 
+// Función para manejar el cambio de archivo
+const onFileChange = (file) => {
+  touched.profileImage = true;
+  // Revalidar el formulario
+  formRef.value.validate();
+};
+
+// Función para manejar el envío del formulario
 const setData = async () => {
   // Establecer todos los campos como "tocados" para activar la validación
   Object.keys(touched).forEach((key) => {
     touched[key] = true;
   });
 
-  // Verificar el estado de formRef antes de validar
-  if (!formRef.value) {
-    return;
-  }
-
   // Validar el formulario antes de enviar los datos
   const isValid = await formRef.value.validate();
 
-  // Depuración detallada
-  if (isValid.valid) {
-    // Registro de usuario en Firebase Authentication
-    const userCredential = await createUserWithEmailAndPassword(
-      auth,
-      data.email,
-      data.id_authentication
-    );
-    console.log("Usuario registrado en Firebase Auth:", userCredential.user);
+  if (isValid) {
+    try {
+      // Registro de usuario en Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        data.email,
+        data.password
+      );
 
-    // Asignar el primer rol obtenido de la base de datos al usuario
-    if (firstRol) {
-      data.id_roles = firstRol.value; // Utilizar el ID del primer rol
-    } else {
-      console.error("No se pudo asignar un rol predeterminado.");
-      return;
+      // Asignar el rol predeterminado al usuario
+      if (defaultRoleId) {
+        data.id_roles = defaultRoleId;
+      } else {
+        console.error("No se pudo asignar un rol predeterminado.");
+        showSnackbar.value = true;
+        textSnackbar.value = "Error al asignar el rol al usuario";
+        return;
+      }
+
+      // Subir la imagen de perfil a Firebase Storage
+      let profileImageUrl = "";
+      if (data.profileImage) {
+        const file = Array.isArray(data.profileImage)
+          ? data.profileImage[0]
+          : data.profileImage;
+        const imageRef = storageRef(
+          storage,
+          `profileImages/${userCredential.user.uid}`
+        );
+        await uploadBytes(imageRef, file);
+        profileImageUrl = await getDownloadURL(imageRef);
+      }
+
+      // Preparar datos para enviar a Firestore
+      const {
+        confirm_password,
+        password,
+        profileImage,
+        ...dataToSend
+      } = data;
+
+      // Añadir la URL de la imagen de perfil a los datos a enviar
+      dataToSend.profileImageUrl = profileImageUrl;
+
+      // Guardar datos del usuario en Firestore
+      const newUser = doc(collection(db, "users"), userCredential.user.uid);
+      await setDoc(newUser, dataToSend);
+
+      showSnackbar.value = true;
+      textSnackbar.value = "Usuario creado exitosamente";
+
+      // Limpiar el formulario después de enviar los datos
+      clearForm();
+
+      // Redirigir al usuario a la página principal u otra página
+      router.push("/");
+    } catch (error) {
+      if (error.code === "auth/email-already-in-use") {
+        textSnackbar.value = "El correo electrónico ya está en uso.";
+      } else if (error.code === "auth/weak-password") {
+        textSnackbar.value = "La contraseña es demasiado débil.";
+      } else {
+        textSnackbar.value = "Error al crear el usuario";
+      }
+      console.error("Error al registrar el usuario:", error);
+      showSnackbar.value = true;
     }
-    // Crear una copia de 'data' sin la propiedad 'confirm_password'
-    const { confirm_password, id_authentication, ...dataToSend } = data;
-
-    // Aquí es donde se haría la llamada a Firestore para guardar los datos
-    const newUser = doc(collection(db, "users"),userCredential.user.uid);
-    await setDoc(newUser, dataToSend); // Enviar 'dataToSend' a Firestore
-
-    console.log(newUser,":()");
-    showSnackbar.value = true;
-    textSnackbar.value = "Usuario creado exitosamente";
-    // Limpiar el formulario después de enviar los datos
-    clearForm();
-    return;
   } else {
     showSnackbar.value = true;
     textSnackbar.value = "Verifique los campos del formulario";
@@ -209,7 +287,6 @@ const setData = async () => {
 
 // Configurar onMounted
 onMounted(() => {
-  getDataUsers();
   fetchAndStoreDocumentTypes();
   fetchRoles();
   fetchAndStoreCities();
@@ -334,15 +411,33 @@ onMounted(() => {
               ></v-text-field>
             </v-col>
           </v-row>
+          <!-- Campo para la imagen de perfil -->
+          <v-row class="d-flex justify-center">
+            <v-col cols="12" sm="12" md="12" lg="12" xl="12" class="pt-0">
+              <v-file-input
+                v-model="data.profileImage"
+                :rules="profileImageRules"
+                label="Foto de perfil"
+                variant="outlined"
+                accept="image/*"
+                prepend-icon="mdi-camera"
+                clearable
+                clear-icon="mdi mdi-close-circle-outline"
+                @change="onFileChange"
+                @blur="touched.profileImage = true"
+              ></v-file-input>
+            </v-col>
+          </v-row>
           <v-row class="d-flex justify-center">
             <v-col cols="12" sm="6" md="6" lg="6" xl="6" class="pt-0">
               <v-text-field
-                v-model="data.id_authentication"
+                v-model="data.password"
                 :rules="passwordRules"
                 label="Contraseña"
                 variant="outlined"
                 color="primary"
                 class="mt-1"
+                type="password"
                 required
                 clearable
                 clear-icon="mdi mdi-close-circle-outline"
@@ -357,6 +452,7 @@ onMounted(() => {
                 variant="outlined"
                 color="primary"
                 class="mt-1"
+                type="password"
                 required
                 clearable
                 clear-icon="mdi mdi-close-circle-outline"
@@ -371,7 +467,6 @@ onMounted(() => {
             color="#fff"
             block
             @click="setData"
-            :disabled="!formRef?.validate()"
           >
             Registrar
           </v-btn>

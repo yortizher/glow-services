@@ -14,7 +14,9 @@ export default defineNuxtConfig({
     },
     "@pinia/nuxt",
   ],
-  css: ["~/assets/scss/main.scss"],
+  css: ['~/assets/scss/main.scss',
+    'vuetify/styles',
+    '@mdi/font/css/materialdesignicons.css',],
   vite: {
     css: {
       preprocessorOptions: {
@@ -38,6 +40,6 @@ export default defineNuxtConfig({
       firebaseMessagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
       firebaseAppId: process.env.FIREBASE_APP_ID,
       firebaseMeasurementId: process.env.FIREBASE_MEASUREMENT_ID,
-    },
-  },
+    },
+  },
 });

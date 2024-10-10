@@ -226,13 +226,11 @@ const getDataServices = async () => {
     const resServices = await getDocs(collection(db, "service_type"));
     servicesList.value = resServices.docs.map((doc) => {
       const dataService = doc.data();
-      console.log(`Service ID: ${doc.id}, Data:`, dataService); // Log cada servicio
       return {
         title: dataService.name || dataService.serviceName || "Sin nombre",
         value: doc.id,
       };
     });
-    console.log("Servicios obtenidos:", servicesList.value);
   } catch (error) {
     console.error("Error al obtener los servicios:", error);
   }
@@ -263,7 +261,6 @@ const clearForm = () => {
 
 // Función para manejar el cambio de archivo
 const onFileChange = (file) => {
-  console.log("Imagen seleccionada:", file);
   touched.profileImage = true;
   // Revalidar el formulario
   formRef.value.validate();
@@ -287,7 +284,6 @@ const setData = async () => {
         data.email,
         data.id_authentication
       );
-      console.log("Usuario registrado en Firebase Auth:", userCredential.user);
 
       // Asignar rol predeterminado
       if (defaultRoleId) {
@@ -311,7 +307,6 @@ const setData = async () => {
         );
         await uploadBytes(imageRef, file);
         profileImageUrl = await getDownloadURL(imageRef);
-        console.log("URL de la imagen de perfil:", profileImageUrl);
       }
 
       // Preparar datos para enviar a Firestore

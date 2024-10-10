@@ -1,8 +1,9 @@
-// import this after install `@mdi/font` package
 import "@mdi/font/css/materialdesignicons.css";
 
 import "vuetify/styles";
 import { createVuetify, type ThemeDefinition } from "vuetify";
+
+import { VDateInput } from 'vuetify/labs/VDateInput'
 
 const myCustomLightTheme: ThemeDefinition = {
   dark: false,
@@ -63,6 +64,9 @@ const myCustomDarkTheme: ThemeDefinition = {
 export default defineNuxtPlugin((app) => {
   const vuetify = createVuetify({
     ssr: true,
+    components: {
+      VDateInput,
+    },
     theme: {
       defaultTheme: "myCustomLightTheme",
       themes: {

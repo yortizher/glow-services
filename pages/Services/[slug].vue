@@ -1,7 +1,71 @@
+<template>
+  <v-row class="d-flex justify-center">
+    <v-col cols="11" sm="7" md="7" lg="7" xl="7">
+      <v-card class="mx-auto my-8" elevation="3">
+        <v-row class="d-flex justify-center">
+          <v-col cols="11" sm="11" md="6" lg="5" xl="5">
+            <v-img
+              class="img-card"
+              v-if="selectedService?.image"
+              :src="selectedService.image"
+              alt="Imagen del servicio"
+            />
+          </v-col>
+          <v-col cols="11" sm="11" md="6" lg="5" xl="5">
+            <h3
+              class="text-primary text-center title-card"
+              v-if="selectedService"
+            >
+              {{ selectedService.name }}
+            </h3>
+            <v-card-title v-else>{{
+              loading ? "Cargando..." : "Servicio no disponible"
+            }}</v-card-title>
+
+            <v-card-text class="description-card" v-if="selectedService">
+              Precio: ${{ selectedService.price }}
+              <p class="text-center mb-2">Descripción</p>
+              <p v-if="selectedService">{{ selectedService.description }}</p>
+              <p v-else-if="error">{{ error }}</p>
+
+              <!-- Selector de ciudad -->
+              <v-col cols="12" class="pa-0 mt-3">
+                <v-select
+                  v-model="selectedCity"
+                  label="Ciudad"
+                  :items="citiesList"
+                  variant="outlined"
+                  color="primary"
+                  required
+                  clearable
+                  clear-icon="mdi mdi-close-circle-outline"
+                ></v-select>
+              </v-col>
+
+              <!-- Time picker debajo del selector de ciudad -->
+              <v-col cols="12" class="pa-0 mt-3">
+                <v-date-input
+                  v-model="selectedDate"
+                  label="Selecciona una fecha"
+                  :min="today"
+                  max-width="368"
+                ></v-date-input>
+              </v-col>
+            </v-card-text>
+          </v-col>
+        </v-row>
+      </v-card>
+    </v-col>
+  </v-row>
+</template>
+
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { getDocs, collection, getFirestore } from "firebase/firestore";
+
+// Obtener la fecha actual en formato 'YYYY-MM-DD'
+const today = new Date().toISOString().split("T")[0];
 
 const db = getFirestore();
 const route = useRoute();
@@ -11,10 +75,7 @@ const loading = ref(true);
 const error = ref(null);
 const citiesList = ref([]);
 const selectedCity = ref(null);
-const selectedDate = ref(null); // Almacena la fecha seleccionada
-const menuDate = ref(false);    // Controla la apertura del menú del date picker
-const minDate = ref(new Date().toISOString().substr(0, 10)); // Fecha mínima (hoy)
-
+const selectedDate = ref(null); // Fecha seleccionada
 
 // Función para obtener todos los servicios de la colección y buscar el seleccionado
 const getAllServices = async () => {
@@ -67,90 +128,7 @@ onMounted(() => {
   getAllServices();
   fetchAndStoreCities();
 });
-
-// Si deseas que se actualicen cuando cambie la ruta, puedes usar watch
-// watch(() => route.params.slug, () => {
-//   getAllServices();
-//   fetchAndStoreCities();
-// }, { immediate: true });
 </script>
-
-<template>
-  <v-row class="d-flex justify-center">
-    <v-col cols="11" sm="7" md="7" lg="7" xl="7">
-      <v-card class="mx-auto my-8" elevation="3">
-        <v-row class="d-flex justify-center">
-          <v-col cols="11" sm="11" md="6" lg="5" xl="5">
-            <v-img
-              class="img-card"
-              v-if="selectedService?.image"
-              :src="selectedService.image"
-              alt="Imagen del servicio"
-            />
-          </v-col>
-          <v-col cols="11" sm="11" md="6" lg="5" xl="5">
-            <h3
-              class="text-primary text-center title-card"
-              v-if="selectedService"
-            >
-              {{ selectedService.name }}
-            </h3>
-            <v-card-title v-else>{{
-              loading ? "Cargando..." : "Servicio no disponible"
-            }}</v-card-title>
-
-            <v-card-text class="description-card" v-if="selectedService">
-              Precio: ${{ selectedService.price }}
-              <p class="text-center mb-2">Descripción</p>
-              <p v-if="selectedService">{{ selectedService.description }}</p>
-              <p v-else-if="error">{{ error }}</p>
-
-              <!-- Selector de ciudad -->
-              <v-col cols="12" class="pa-0 mt-3">
-                <v-select
-                  v-model="selectedCity"
-                  label="Ciudad"
-                  :items="citiesList"
-                  variant="outlined"
-                  color="primary"
-                  required
-                  clearable
-                  clear-icon="mdi mdi-close-circle-outline"
-                ></v-select>
-              </v-col>
-              <v-col cols="12" class="pa-0 mt-3">
-                <v-menu
-                  v-model="menuDate"
-                  :close-on-content-click="false"
-                  transition="scale-transition"
-                  offset-y
-                  max-width="290px"
-                  min-width="290px"
-                >
-                  <template #activator="{ on, attrs }">
-                    <v-text-field
-                      v-model="selectedDate"
-                      label="Selecciona una fecha"
-                      prepend-icon="mdi-calendar"
-                      readonly
-                      v-bind="attrs"
-                      v-on="on"
-                    ></v-text-field>
-                  </template>
-                  <v-date-picker
-                    v-model="selectedDate"
-                    :min="minDate"
-                    @input="menuDate = false"
-                  ></v-date-picker>
-                </v-menu>
-              </v-col>
-            </v-card-text>
-          </v-col>
-        </v-row>
-      </v-card>
-    </v-col>
-  </v-row>
-</template>
 
 <style lang="scss">
 * {
