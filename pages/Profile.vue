@@ -757,8 +757,8 @@ onMounted(() => {
             color="quinary"
             @click="
               confirmDeleteDialog = false;
-              actionAfterReauth.value = 'deleteAccount';
-              reauthDialog.value = true;
+              actionAfterReauth = 'deleteAccount';
+              reauthDialog = true;
             "
           >
             Eliminar

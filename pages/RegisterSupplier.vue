@@ -544,7 +544,7 @@ onMounted(() => {
             <v-col cols="12" sm="12" md="12" lg="12" xl="12" class="mt-0 pt-0">
               <div class="text-medium-emphasis mb-2">
                 Lee las descripciones de los
-                <a class="link text-primary" href="">servicios</a> y elige los que
+                <NuxtLink class="link text-primary" to="/Menu">servicios</NuxtLink> y elige los que
                 puedes ofrecer.
               </div>
               <div v-if="isServicesListLoaded">

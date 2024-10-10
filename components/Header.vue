@@ -67,7 +67,7 @@ onMounted(() => {
       <v-toolbar-items class="toolbar__items d-none d-sm-flex pr-5">
         <!-- Link a Servicios -->
         <v-toolbar-items class="toolbar__item toolbar__item--services text-end mr-5">
-          <NuxtLink class="toolbar__link" to="/Services">Servicios</NuxtLink>
+          <NuxtLink class="toolbar__link" to="/Menu">Servicios</NuxtLink>
         </v-toolbar-items>
 
         <!-- Iniciar sesión (cuando no hay usuario) -->
@@ -152,52 +152,42 @@ onMounted(() => {
     class="toolbar__drawer d-flex d-sm-none"
   >
     <v-list v-if="!userName">
-      <v-list-item>
-        <v-list-item-content class="text-center">
+      <v-list-item class="text-center">
           <v-list-item-title>
             <NuxtLink class="toolbar__drawer-link" to="/login"
               >Inicie sesión</NuxtLink
             >
           </v-list-item-title>
-        </v-list-item-content>
       </v-list-item>
 
-      <v-list-item>
-        <v-list-item-content class="text-center">
+      <v-list-item class="text-center">
           <v-list-item-title>
             <NuxtLink class="toolbar__drawer-link" to="/Register"
               >Registro Usuario</NuxtLink
             >
           </v-list-item-title>
-        </v-list-item-content>
       </v-list-item>
 
-      <v-list-item>
-        <v-list-item-content class="text-center">
+      <v-list-item class="text-center">
           <v-list-item-title>
             <NuxtLink class="toolbar__drawer-link" to="/RegisterSupplier"
               >Registro Proveedor</NuxtLink
             >
           </v-list-item-title>
-        </v-list-item-content>
       </v-list-item>
     </v-list>
     <v-list v-if="userName">
       <v-list-item>
-        <v-list-item-content>
           <v-list-item-title>
             <NuxtLink class="toolbar__drawer-link" to="/Profile">
               Hola, {{ userName.split(" ")[0] }}!
             </NuxtLink>
           </v-list-item-title>
-        </v-list-item-content>
       </v-list-item>
       <v-list-item @click="logout">
-        <v-list-item-content>
           <v-list-item-title class="toolbar__drawer-link"
             >Cerrar sesión</v-list-item-title
           >
-        </v-list-item-content>
       </v-list-item>
     </v-list>
   </v-navigation-drawer>
