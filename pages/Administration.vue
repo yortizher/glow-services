@@ -47,10 +47,10 @@ const serviceToDelete = ref(null); // Almacena el servicio a eliminar
 
 // Encabezados para la tabla de servicios
 const headers = [
-  { text: "Nombre", value: "name" },
-  { text: "Precio", value: "price" },
-  { text: "Descripción", value: "description" },
-  { text: "Acciones", value: "actions", sortable: false },
+  { title: "Nombre", key: "name" },
+  { title: "Precio", key: "price" },
+  { title: "Descripción", key: "description" },
+  { title: "Acciones", key: "actions", sortable: false },
 ];
 
 // Obtener la lista de servicios desde Firestore
@@ -250,22 +250,26 @@ definePageMeta({
     <!-- Lista de servicios existentes -->
     <v-row>
       <v-col cols="12">
-        <v-data-table :items="services" :headers="headers" class="elevation-1">
+        <v-data-table
+          :items="services"
+          :headers="headers"
+          class="elevation-1"
+        >
           <template v-slot:item.actions="{ item }">
-            <v-icon small class="edit-icon" @click="editService(item)"
-              >mdi-pencil</v-icon
-            >
+            <v-icon small class="edit-icon" @click="editService(item)">
+              mdi-pencil
+            </v-icon>
             <v-icon
               small
               class="delete-icon ml-4"
               @click="confirmDeleteService(item.id)"
-              >mdi-delete</v-icon
             >
+              mdi-delete
+            </v-icon>
           </template>
         </v-data-table>
       </v-col>
     </v-row>
-
     <!-- Dialogo de confirmación para eliminar -->
     <v-dialog v-model="showDeleteDialog" persistent max-width="500px">
       <v-card>
@@ -319,7 +323,7 @@ definePageMeta({
 
 .edit-icon:hover {
   transform: scale(1.2);
-  color: #4caf50; /* Color verde para edición */
+  color: #1ed5b9; /* Color verde para edición */
 }
 
 .delete-icon:hover {

@@ -1,32 +1,30 @@
 <script setup>
-/* --------------------- Importaciones --------------------- */
 import { ref, computed, onMounted } from "vue";
 import { useTheme } from "vuetify";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/userStore";
 import { storeToRefs } from "pinia";
 
-/* --------------------- Inicialización --------------------- */
 const router = useRouter();
 const userStore = useUserStore();
 const { user } = storeToRefs(userStore);
 const drawer = ref(false);
 
-/* --------------------- Variables Computadas --------------------- */
 const userName = computed(() => (user.value ? user.value.name : null));
+const profileImageUrl = computed(() =>
+  user.value ? user.value.profileImageUrl : null
+);
 
-const adminRoleId = 'bQf1glwn1acUXQD1ZWzJ'; // ID del rol de administrador
+const adminRoleId = "bQf1glwn1acUXQD1ZWzJ"; // ID del rol de administrador
 
 const isAdmin = computed(() => {
   return user.value && user.value.id_roles === adminRoleId;
 });
-/* --------------------- Datos --------------------- */
 const register = ref([
   { title: "Registro Usuario", icon: "mdi-home", to: "/Register" },
   { title: "Registro Proveedor", icon: "mdi-home", to: "/RegisterSupplier" },
 ]);
 
-/* --------------------- Temas --------------------- */
 const theme = useTheme();
 const toggleTheme = () => {
   theme.global.name.value =
@@ -35,7 +33,6 @@ const toggleTheme = () => {
       : "myCustomLightTheme";
 };
 
-/* --------------------- Métodos --------------------- */
 const goBack = () => {
   router.push({ path: "/" });
 };
@@ -45,7 +42,6 @@ const logout = () => {
   router.push("/"); // Redirigir a la página de inicio de sesión
 };
 
-/* --------------------- Ciclo de Vida --------------------- */
 onMounted(() => {
   userStore.restoreUser();
 });
@@ -69,14 +65,21 @@ onMounted(() => {
       <v-spacer />
 
       <!-- Opciones del Toolbar -->
-      <v-toolbar-items class="toolbar__items d-none d-sm-flex pr-5">
+      <v-toolbar-items class="toolbar__items d-none d-md-flex pr-5">
         <!-- Link a Servicios -->
-        <v-toolbar-items class="toolbar__item toolbar__item--services text-end mr-5">
+        <v-toolbar-items
+          class="toolbar__item toolbar__item--services text-end mr-5"
+        >
           <NuxtLink class="toolbar__link" to="/Menu">Servicios</NuxtLink>
         </v-toolbar-items>
 
-        <v-toolbar-items v-if="isAdmin" class="toolbar__item toolbar__item--services text-end mr-5">
-          <NuxtLink class="toolbar__link" to="/Administration">Administración</NuxtLink>
+        <v-toolbar-items
+          v-if="isAdmin"
+          class="toolbar__item toolbar__item--services text-end mr-5"
+        >
+          <NuxtLink class="toolbar__link" to="/Administration"
+            >Administración</NuxtLink
+          >
         </v-toolbar-items>
 
         <!-- Iniciar sesión (cuando no hay usuario) -->
@@ -103,10 +106,9 @@ onMounted(() => {
                 class="toolbar__list-item"
               >
                 <v-list-item-title>
-                  <NuxtLink
-                    :to="item.to"
-                    class="toolbar__list-link"
-                  >{{ item.title }}</NuxtLink>
+                  <NuxtLink :to="item.to" class="toolbar__list-link">{{
+                    item.title
+                  }}</NuxtLink>
                 </v-list-item-title>
               </v-list-item>
             </v-list>
@@ -143,7 +145,7 @@ onMounted(() => {
       <v-toolbar-items class="toolbar__menu-button d-flex align-center mr-2">
         <v-icon
           @click.stop="drawer = !drawer"
-          class="toolbar__icon toolbar__icon--menu ml-5 d-flex d-sm-none"
+          class="toolbar__icon toolbar__icon--menu ml-5 d-flex d-md-none"
           size="40"
           title="Menú"
         >
@@ -157,55 +159,81 @@ onMounted(() => {
   <v-navigation-drawer
     v-model="drawer"
     location="right"
-    temporary
-    class="toolbar__drawer d-flex d-sm-none"
+    class="toolbar__drawer d-flex d-md-none"
   >
     <v-list v-if="!userName">
-      <v-list-item class="text-center">
-          <v-list-item-title>
-            <NuxtLink class="toolbar__drawer-link" to="/login"
-              >Inicie sesión</NuxtLink
-            >
-          </v-list-item-title>
+      <v-col class="d-flex justify-center mb-2">
+        <v-avatar size="100" variant="outlined" color="primary"
+          ><v-icon
+            size="70"
+            title="Menú"
+          >
+            mdi-account
+          </v-icon></v-avatar
+        >
+      </v-col>
+      <v-list-item class="text-center bg-primary mb-1">
+        <v-list-item-title>
+          <NuxtLink class="toolbar__drawer-link text-quinary" to="/login"
+            >Inicie sesión</NuxtLink
+          >
+        </v-list-item-title>
       </v-list-item>
 
-      <v-list-item class="text-center">
-          <v-list-item-title>
-            <NuxtLink class="toolbar__drawer-link" to="/Register"
-              >Registro Usuario</NuxtLink
-            >
-          </v-list-item-title>
+      <v-list-item class="text-center bg-primary mb-1">
+        <v-list-item-title>
+          <NuxtLink class="toolbar__drawer-link text-quinary" to="/Register"
+            >Registro Usuario</NuxtLink
+          >
+        </v-list-item-title>
       </v-list-item>
 
-      <v-list-item class="text-center">
-          <v-list-item-title>
-            <NuxtLink class="toolbar__drawer-link" to="/RegisterSupplier"
-              >Registro Proveedor</NuxtLink
-            >
-          </v-list-item-title>
+      <v-list-item class="text-center bg-primary mb-1">
+        <v-list-item-title>
+          <NuxtLink
+            class="toolbar__drawer-link text-quinary"
+            to="/RegisterSupplier"
+            >Registro Proveedor</NuxtLink
+          >
+        </v-list-item-title>
       </v-list-item>
     </v-list>
     <v-list v-if="userName">
-      <v-list-item>
-          <v-list-item-title>
-            <NuxtLink class="toolbar__drawer-link" to="/Profile">
-              Hola, {{ userName.split(" ")[0] }}!
-            </NuxtLink>
-          </v-list-item-title>
+      <v-col v-if="profileImageUrl" class="d-flex justify-center mb-2">
+        <v-avatar
+          :image="profileImageUrl"
+          size="100"
+          variant="outlined"
+          color="primary"
+        ></v-avatar>
+      </v-col>
+      <v-list-item class="text-center bg-primary mb-1">
+        <v-list-item-title>
+          <NuxtLink class="toolbar__drawer-link text-quinary" to="/Profile">
+            Hola, {{ userName.split(" ")[0] }}!
+          </NuxtLink>
+        </v-list-item-title>
       </v-list-item>
-      <v-list-item @click="logout">
-          <v-list-item-title class="toolbar__drawer-link"
-            >Cerrar sesión</v-list-item-title
+      <v-list-item class="text-center bg-primary mb-1">
+        <v-list-item-title>
+          <NuxtLink
+            class="toolbar__drawer-link text-quinary"
+            to="/Administration"
           >
+            Administración
+          </NuxtLink>
+        </v-list-item-title>
+      </v-list-item>
+      <v-list-item @click="logout" class="text-center bg-primary mb-1">
+        <v-list-item-title class="toolbar__drawer-link text-quinary"
+          >Cerrar sesión</v-list-item-title
+        >
       </v-list-item>
     </v-list>
   </v-navigation-drawer>
 </template>
 
 <style lang="scss" scoped>
-/* --------------------- Bloques Principales --------------------- */
-
-/* Contenedor principal del toolbar */
 .toolbar {
   &__container {
     position: fixed;
@@ -217,13 +245,11 @@ onMounted(() => {
     cursor: pointer;
   }
 
-  /* Estilos generales para las opciones del toolbar */
   &__items {
     display: flex;
     align-items: center;
   }
 
-  /* Estilos para cada item del toolbar */
   &__item {
     display: flex;
     align-items: center;
@@ -232,7 +258,8 @@ onMounted(() => {
     font-weight: bold;
     cursor: pointer;
 
-    &--services,&--login {
+    &--services,
+    &--login {
       .toolbar__link {
         border-right: solid 2px #1237a9;
         padding-right: 15px;
@@ -242,7 +269,6 @@ onMounted(() => {
     &--register,
     &--profile,
     &--logout {
-      /* Modificadores específicos pueden tener estilos adicionales si es necesario */
     }
   }
 
@@ -251,7 +277,6 @@ onMounted(() => {
     color: #1237a9;
   }
 
-  /* Estilos específicos para la lista de opciones */
   &__list {
     text-align: center;
     background: transparent;
@@ -263,11 +288,9 @@ onMounted(() => {
 
   &__list-link {
     text-decoration: none;
-    color: #1237a9;
     font-family: "Montserrat-Medium";
   }
 
-  /* Estilos para íconos */
   &__icon {
     cursor: pointer;
 
@@ -277,13 +300,11 @@ onMounted(() => {
     }
   }
 
-  /* Botón del menú lateral (versión móvil) */
   &__menu-button {
     display: flex;
     align-items: center;
   }
 
-  /* Drawer de navegación para versión móvil */
   &__drawer {
     display: flex;
     align-items: center;
