@@ -19,12 +19,15 @@ import {
   getDownloadURL,
 } from "firebase/storage";
 import { useRouter } from "vue-router";
+import { useUserStore } from "@/stores/userStore"; // Importa el store
 
 // Inicializa Firestore
 const db = getFirestore();
 
 // Inicializa Firebase Authentication
 const auth = getAuth();
+
+const userStore = useUserStore(); // Inicializa el store
 
 // Inicializa Firebase Storage
 const storage = getStorage();
@@ -259,6 +262,13 @@ const setData = async () => {
       // Guardar datos del usuario en Firestore
       const newUser = doc(collection(db, "users"), userCredential.user.uid);
       await setDoc(newUser, dataToSend);
+
+      userStore.setUser({
+        uid: userCredential.user.uid,
+        email: data.email,
+        ...dataToSend,
+      });
+      userStore.setToken(userCredential.user.accessToken);
 
       showSnackbar.value = true;
       textSnackbar.value = "Usuario creado exitosamente";

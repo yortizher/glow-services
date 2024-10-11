@@ -197,6 +197,15 @@ onMounted(() => {
           >
         </v-list-item-title>
       </v-list-item>
+      <v-list-item class="text-center bg-primary mb-1">
+        <v-list-item-title>
+          <NuxtLink
+            class="toolbar__drawer-link text-quinary"
+            to="/Menu"
+            >Servicios</NuxtLink
+          >
+        </v-list-item-title>
+      </v-list-item>
     </v-list>
     <v-list v-if="userName">
       <v-col v-if="profileImageUrl" class="d-flex justify-center mb-2">
@@ -214,7 +223,7 @@ onMounted(() => {
           </NuxtLink>
         </v-list-item-title>
       </v-list-item>
-      <v-list-item class="text-center bg-primary mb-1">
+      <v-list-item v-if="isAdmin" class="text-center bg-primary mb-1">
         <v-list-item-title>
           <NuxtLink
             class="toolbar__drawer-link text-quinary"
@@ -222,6 +231,15 @@ onMounted(() => {
           >
             Administración
           </NuxtLink>
+        </v-list-item-title>
+      </v-list-item>
+      <v-list-item class="text-center bg-primary mb-1">
+        <v-list-item-title>
+          <NuxtLink
+            class="toolbar__drawer-link text-quinary"
+            to="/Menu"
+            >Servicios</NuxtLink
+          >
         </v-list-item-title>
       </v-list-item>
       <v-list-item @click="logout" class="text-center bg-primary mb-1">
