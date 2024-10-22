@@ -40,7 +40,7 @@ const data = reactive({
   acceptance_terms: false, // Aceptación de términos
   profileImage: null, // Imagen de perfil seleccionada
   id_roles: "", // Role ID
-  description: ""
+  description: "",
 });
 
 // Objeto reactivo para rastrear los campos interactuados
@@ -58,7 +58,7 @@ const touched = reactive({
   services: false,
   acceptance_terms: false,
   profileImage: false,
-  description: false
+  description: false,
 });
 
 // Reglas de validación para los campos del formulario
@@ -173,8 +173,6 @@ const descriptionRules = ref([
     (v && v.length <= 700) ||
     "La descripción debe tener menos de 700 caracteres.",
 ]);
-
-
 
 // Tipos de documento, ciudades y servicios disponibles
 const citiesList = ref([]);
@@ -607,14 +605,14 @@ onMounted(() => {
                   Acepto los
                   <v-tooltip location="bottom">
                     <template v-slot:activator="{ props }">
-                      <a
-                        href="#"
-                        v-bind="props"
-                        @click.stop
-                        class="text-primary link-terms"
-                      >
-                        términos de servicio y la política de privacidad
-                      </a>
+                      <span v-bind="props">
+                        <NuxtLink
+                          to="/TermsAndConditions"
+                          class="text-primary link-terms"
+                        >
+                          términos de servicio y la política de privacidad
+                        </NuxtLink>
+                      </span>
                     </template>
                     Ver los términos de servicio y la política de privacidad.
                   </v-tooltip>

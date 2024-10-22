@@ -49,6 +49,7 @@ const goBack = () => {
 
 const logout = () => {
   userStore.clearUser();
+  cartStore.limpiarCarrito(); // Limpiar el carrito al cerrar sesión
   router.push("/"); // Redirigir a la página de inicio de sesión
 };
 

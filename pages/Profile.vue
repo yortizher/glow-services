@@ -54,7 +54,7 @@ const data = reactive({
   profileImage: null,
   id_roles: "",
   profileImageUrl: "",
-  description: ""
+  description: "",
 });
 
 // Objeto reactivo para rastrear los campos interactuados
@@ -69,7 +69,7 @@ const touched = reactive({
   bank_account_number: false,
   services: false,
   profileImage: false,
-  description: false
+  description: false,
 });
 
 // Reglas de validación
@@ -332,7 +332,10 @@ const performUpdateData = async () => {
   if (data.profileImage) {
     // Si ya hay una imagen, eliminarla
     if (profileImageUrl) {
-      const oldImageRef = storageRef(storage, `profileImages/${user.value.uid}`);
+      const oldImageRef = storageRef(
+        storage,
+        `profileImages/${user.value.uid}`
+      );
       await deleteObject(oldImageRef);
     }
     const file = Array.isArray(data.profileImage)
@@ -470,7 +473,12 @@ onMounted(() => {
         <v-form ref="formRef">
           <h2 class="title-login text-primary">Tu Perfil</h2>
           <v-col v-if="data.profileImageUrl" class="d-flex justify-center mb-2">
-            <v-avatar :image="data.profileImageUrl" size="200" variant="outlined" color="primary"></v-avatar>
+            <v-avatar
+              :image="data.profileImageUrl"
+              size="200"
+              variant="outlined"
+              color="primary"
+            ></v-avatar>
           </v-col>
           <v-row class="d-flex justify-center">
             <v-col cols="12" sm="6" md="6" lg="6" xl="6" class="pt-0">
@@ -559,7 +567,14 @@ onMounted(() => {
             </v-col>
           </v-row>
           <v-row>
-            <v-col cols="12" sm="6" md="6" lg="6" xl="6" class="pt-0">
+            <v-col
+              :cols="data.id_roles === 'BrRcZz4BfmEKcUAhDQrs' ? 6 : 12"
+              :sm="data.id_roles === 'BrRcZz4BfmEKcUAhDQrs' ? 6 : 12"
+              :md="data.id_roles === 'BrRcZz4BfmEKcUAhDQrs' ? 6 : 12"
+              :lg="data.id_roles === 'BrRcZz4BfmEKcUAhDQrs' ? 6 : 12"
+              :xl="data.id_roles === 'BrRcZz4BfmEKcUAhDQrs' ? 6 : 12"
+              class="pt-0"
+            >
               <v-text-field
                 v-model="data.phone"
                 :rules="phoneRules"
@@ -573,7 +588,15 @@ onMounted(() => {
                 @blur="touched.phone = true"
               ></v-text-field>
             </v-col>
-            <v-col cols="12" sm="6" md="6" lg="6" xl="6" class="pt-0">
+            <v-col
+              v-if="data.id_roles === 'BrRcZz4BfmEKcUAhDQrs'"
+              cols="12"
+              sm="6"
+              md="6"
+              lg="6"
+              xl="6"
+              class="pt-0"
+            >
               <v-text-field
                 v-model="data.bank_account_number"
                 :rules="bankAccountNumberRules"
@@ -611,8 +634,10 @@ onMounted(() => {
             <v-col cols="12" sm="12" md="12" lg="12" xl="12" class="mt-0 pt-0">
               <div class="text-medium-emphasis mb-2">
                 Lee las descripciones de los
-                <NuxtLink class="link text-primary" to="/Menu">servicios</NuxtLink> y elige los
-                que puedes ofrecer.
+                <NuxtLink class="link text-primary" to="/Menu"
+                  >servicios</NuxtLink
+                >
+                y elige los que puedes ofrecer.
               </div>
               <div v-if="isServicesListLoaded">
                 <v-select
@@ -820,7 +845,8 @@ onMounted(() => {
     font-weight: 600;
   }
 
-  .btn-delete,.btn-save {
+  .btn-delete,
+  .btn-save {
     text-align: center;
     font-weight: 700;
     font-size: 15px;
