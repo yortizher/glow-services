@@ -6,6 +6,12 @@ const db = getFirestore();
 
 const services = ref([]);
 
+const items = [
+  { text: 'Inicio', href: '/' },
+  { text: 'Servicios', href: '/Menu' },
+]
+
+
 const getDataServices = async () => {
   try {
     const resServices = await getDocs(collection(db, "service_type"));
@@ -25,6 +31,15 @@ onMounted(() => {
 <template>
   <v-col cols="11" class="d-flex mx-auto">
     <v-row>
+      <v-col>
+        <v-breadcrumbs :items="items" color="primary">
+          <template v-slot:item="{ item }">
+            <v-breadcrumbs-item :href="item.href">
+              {{ item.text }}
+            </v-breadcrumbs-item>
+          </template>
+        </v-breadcrumbs>
+      </v-col>
       <v-col cols="12" class="text-center">
         <h1 class="title-services text-primary">Nuestros servicios</h1>
       </v-col>
@@ -37,19 +52,21 @@ onMounted(() => {
         md="4"
         lg="3"
       >
-      <NuxtLink :to="`/Services/` + item.name" class="link-content">
-        <v-card>
-          <v-img height="250px" :src="item.image" cover></v-img>
+        <NuxtLink :to="`/Services/` + item.name" class="link-content">
+          <v-card>
+            <v-img height="250px" :src="item.image" cover></v-img>
 
-          <v-card-title>{{ item.name }}</v-card-title>
+            <v-card-title>{{ item.name }}</v-card-title>
 
-          <v-card-subtitle>${{ item.price }}</v-card-subtitle>
+            <v-card-subtitle>${{ item.price }}</v-card-subtitle>
 
-          <v-card-actions>
-            <v-btn class="bg-primary btn-services" block>Mas información</v-btn>
-          </v-card-actions>
-        </v-card>
-      </NuxtLink>
+            <v-card-actions>
+              <v-btn class="bg-primary btn-services" block
+                >Mas información</v-btn
+              >
+            </v-card-actions>
+          </v-card>
+        </NuxtLink>
       </v-col>
     </v-row>
   </v-col>

@@ -54,6 +54,7 @@ const data = reactive({
   profileImage: null,
   id_roles: "",
   profileImageUrl: "",
+  description: ""
 });
 
 // Objeto reactivo para rastrear los campos interactuados
@@ -68,6 +69,7 @@ const touched = reactive({
   bank_account_number: false,
   services: false,
   profileImage: false,
+  description: false
 });
 
 // Reglas de validación
@@ -162,6 +164,18 @@ const confirmPasswordRulesChange = ref([
   (v) => !v || v === newPassword.value || "Las contraseñas no coinciden.",
 ]);
 
+const descriptionRules = ref([
+  (v) => !touched.description || !!v || "La descripción es obligatoria.",
+  (v) =>
+    !touched.description ||
+    (v && v.length >= 500) ||
+    "La descripción debe tener al menos 500 caracteres.",
+  (v) =>
+    !touched.description ||
+    (v && v.length <= 700) ||
+    "La descripción debe tener menos de 700 caracteres.",
+]);
+
 // Lista de ciudades, tipos de documento y servicios
 const citiesList = ref([]);
 const documentTypes = ref([]);
@@ -200,6 +214,7 @@ const fetchUserData = async () => {
       data.services = userData.services || [];
       data.id_roles = userData.id_roles || "";
       data.profileImageUrl = userData.profileImageUrl || "";
+      data.description = userData.description || "";
     } else {
       console.error("No se encontraron datos del usuario en Firestore.");
     }
@@ -341,6 +356,7 @@ const performUpdateData = async () => {
     services: data.services,
     id_roles: data.id_roles,
     profileImageUrl: profileImageUrl,
+    description: data.description,
   };
 
   // Actualizar datos del usuario en Firestore
@@ -616,6 +632,22 @@ onMounted(() => {
                 ></v-select>
               </div>
               <v-skeleton-loader v-else type="list-item"></v-skeleton-loader>
+            </v-col>
+          </v-row>
+
+          <v-row v-if="data.description">
+            <v-col cols="12">
+              <v-textarea
+                v-model="data.description"
+                :rules="descriptionRules"
+                label="Descripción"
+                variant="outlined"
+                color="primary"
+                required
+                clearable
+                clear-icon="mdi mdi-close-circle-outline"
+                @blur="touched.description = true"
+              ></v-textarea>
             </v-col>
           </v-row>
 

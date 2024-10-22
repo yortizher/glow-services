@@ -80,9 +80,21 @@ const saveService = async () => {
 
     // Subir la imagen al almacenamiento si se seleccionó una nueva imagen
     if (service.imageFile) {
-      const fileRef = storageRef(storage, `serviceImages/${service.name}`);
-      await uploadBytes(fileRef, service.imageFile);
-      imageUrl = await getDownloadURL(fileRef);
+      const file = Array.isArray(service.imageFile)
+        ? service.imageFile[0]
+        : service.imageFile;
+
+      // Verificar que el archivo sea un objeto File y tenga la propiedad 'type'
+      if (file && file.type) {
+        const fileRef = storageRef(storage, `serviceImages/${service.name}`);
+        console.log("Archivo a subir:", file);
+        await uploadBytes(fileRef, file);
+        imageUrl = await getDownloadURL(fileRef);
+      } else {
+        snackbarText.value = "Por favor, seleccione un archivo de imagen válido.";
+        showSnackbar.value = true;
+        return;
+      }
     }
 
     const serviceData = {
@@ -108,6 +120,7 @@ const saveService = async () => {
     fetchServices();
   } catch (error) {
     snackbarText.value = `Error: ${error.message}`;
+    console.error("Error en saveService:", error);
   } finally {
     showSnackbar.value = true;
   }
@@ -212,9 +225,11 @@ definePageMeta({
             v-model="service.imageFile"
             label="Imagen del Servicio"
             accept="image/*"
-            color="primary"
+            variant="outlined"
             prepend-icon="mdi-camera"
-            @change="onFileChange"
+            clearable
+            clear-icon="mdi mdi-close-circle-outline"
+            @blur="touched.imageFile = true"
           ></v-file-input>
         </v-col>
       </v-row>
@@ -250,11 +265,7 @@ definePageMeta({
     <!-- Lista de servicios existentes -->
     <v-row>
       <v-col cols="12">
-        <v-data-table
-          :items="services"
-          :headers="headers"
-          class="elevation-1"
-        >
+        <v-data-table :items="services" :headers="headers" class="elevation-1">
           <template v-slot:item.actions="{ item }">
             <v-icon small class="edit-icon" @click="editService(item)">
               mdi-pencil
@@ -273,9 +284,9 @@ definePageMeta({
     <!-- Dialogo de confirmación para eliminar -->
     <v-dialog v-model="showDeleteDialog" persistent max-width="500px">
       <v-card>
-        <h2 class="title text-center mt-2 text-primary"
-          >Confirmar Eliminación</h2
-        >
+        <h2 class="title text-center mt-2 text-primary">
+          Confirmar Eliminación
+        </h2>
         <v-card-text class="description mb-3"
           >¿Estás seguro de que deseas eliminar este servicio?</v-card-text
         >
@@ -287,7 +298,13 @@ definePageMeta({
             @click="showDeleteDialog = false"
             >Cancelar</v-btn
           >
-          <v-btn  class="bg-red btn-dialog" color="quinary" text @click="deleteService">Eliminar</v-btn>
+          <v-btn
+            class="bg-red btn-dialog"
+            color="quinary"
+            text
+            @click="deleteService"
+            >Eliminar</v-btn
+          >
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -295,11 +312,13 @@ definePageMeta({
     <!-- Snackbar de notificaciones -->
     <v-snackbar
       v-model="showSnackbar"
-      :timeout="timeout"
+      timeout="3000"
       color="tertiary"
       location="top"
     >
-      {{ snackbarText }}
+      <div class="text-center">
+        <span>{{ snackbarText }}</span>
+      </div>
     </v-snackbar>
   </v-container>
 </template>

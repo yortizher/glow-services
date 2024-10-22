@@ -81,7 +81,6 @@ const getUserFromFirestore = async (uid) => {
   try {
     const userRef = doc(db, "users", uid); // Referencia al documento del usuario en la colección "users"
     const userSnap = await getDoc(userRef); // Usar getDoc para un solo documento
-
     if (userSnap.exists()) {
       return userSnap.data();
     } else {

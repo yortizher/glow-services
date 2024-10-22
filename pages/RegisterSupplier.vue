@@ -40,6 +40,7 @@ const data = reactive({
   acceptance_terms: false, // Aceptación de términos
   profileImage: null, // Imagen de perfil seleccionada
   id_roles: "", // Role ID
+  description: ""
 });
 
 // Objeto reactivo para rastrear los campos interactuados
@@ -57,6 +58,7 @@ const touched = reactive({
   services: false,
   acceptance_terms: false,
   profileImage: false,
+  description: false
 });
 
 // Reglas de validación para los campos del formulario
@@ -160,6 +162,19 @@ const profileImageRules = ref([
     );
   },
 ]);
+const descriptionRules = ref([
+  (v) => !touched.description || !!v || "La descripción es obligatoria.",
+  (v) =>
+    !touched.description ||
+    (v && v.length >= 500) ||
+    "La descripción debe tener al menos 500 caracteres.",
+  (v) =>
+    !touched.description ||
+    (v && v.length <= 700) ||
+    "La descripción debe tener menos de 700 caracteres.",
+]);
+
+
 
 // Tipos de documento, ciudades y servicios disponibles
 const citiesList = ref([]);
@@ -539,8 +554,10 @@ onMounted(() => {
             <v-col cols="12" sm="12" md="12" lg="12" xl="12" class="mt-0 pt-0">
               <div class="text-medium-emphasis mb-2">
                 Lee las descripciones de los
-                <NuxtLink class="link text-primary" to="/Menu">servicios</NuxtLink> y elige los que
-                puedes ofrecer.
+                <NuxtLink class="link text-primary" to="/Menu"
+                  >servicios</NuxtLink
+                >
+                y elige los que puedes ofrecer.
               </div>
               <div v-if="isServicesListLoaded">
                 <v-select
@@ -562,6 +579,22 @@ onMounted(() => {
               <v-skeleton-loader v-else type="list-item"></v-skeleton-loader>
             </v-col>
           </v-row>
+          <v-row>
+            <v-col cols="12">
+              <v-textarea
+                v-model="data.description"
+                :rules="descriptionRules"
+                label="Descripción"
+                variant="outlined"
+                color="primary"
+                required
+                clearable
+                clear-icon="mdi mdi-close-circle-outline"
+                @blur="touched.description = true"
+              ></v-textarea>
+            </v-col>
+          </v-row>
+
           <v-col cols="12" sm="12" md="12" lg="12" xl="12" class="pa-0">
             <v-checkbox
               v-model="data.acceptance_terms"
