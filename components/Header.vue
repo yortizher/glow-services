@@ -76,7 +76,7 @@ onMounted(() => {
       <v-spacer />
 
       <!-- Opciones del Toolbar -->
-      <v-toolbar-items class="toolbar__items d-none d-md-flex pr-5">
+      <v-toolbar-items class="toolbar__items d-none d-md-flex">
         <!-- Link a Servicios -->
         <v-toolbar-items
           class="toolbar__item toolbar__item--services text-end mr-5"
@@ -301,7 +301,7 @@ onMounted(() => {
       <h2 class="toolbar__cart-title">Carrito de Compras</h2>
       <!-- Botón de cerrar -->
       <v-btn
-       variant="text"
+        variant="text"
         icon
         class="toolbar__cart-close-btn"
         @click="drawerCart = false"
@@ -320,13 +320,8 @@ onMounted(() => {
           :key="index"
           class="toolbar__cart-list-item"
         >
-          <v-list-item-title class="toolbar__cart-item-title"
-            >{{ item.serviceName }} - {{ item.city }}</v-list-item-title
-          >
-          <v-list-item-subtitle class="toolbar__cart-item-subtitle"
-            >Fecha: {{ item.date }}</v-list-item-subtitle
-          >
-          <v-list-item-action
+          <h3 class="toolbar__cart-item-title">{{ item.serviceName }}</h3>
+          <h5 class="toolbar__cart-item-subtitle">{{ new Date(item.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }) }}</h5>          <v-list-item-action
             class="toolbar__cart-item-action d-flex justify-end"
           >
             <v-btn
@@ -408,6 +403,7 @@ onMounted(() => {
     }
 
     &--services,
+    &--administration,
     &--login {
       .toolbar__link {
         border-right: solid 2px #1237a9;
