@@ -29,7 +29,7 @@ onMounted(() => {
 });
 </script>
 <template>
-  <v-col cols="11" class="d-flex mx-auto">
+  <v-col cols="12" class="d-flex justify-center">
     <v-row>
       <v-col>
         <v-breadcrumbs :items="items" color="primary">
@@ -40,7 +40,7 @@ onMounted(() => {
           </template>
         </v-breadcrumbs>
       </v-col>
-      <v-col cols="12" class="text-center">
+      <v-col cols="11" class="text-center">
         <h1 class="title-services text-primary">Nuestros servicios</h1>
       </v-col>
       <v-col
